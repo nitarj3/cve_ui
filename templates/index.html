@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CVE Database</title>
+    <!-- Google Fonts for a modern font style -->
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&family=Ubuntu:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f4f7fc;
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        h1 {
+            font-family: 'Ubuntu', sans-serif;
+            color: #4A90E2;
+            text-align: center;
+            padding: 20px 0;
+            margin: 0;
+            background-color: #fff;
+            border-bottom: 2px solid #ddd;
+        }
+        h2 {
+            font-family: 'Ubuntu', sans-serif;
+            color: #333;
+        }
+        .container {
+            width: 80%;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        form label {
+            display: block;
+            font-weight: 500;
+            margin: 10px 0 5px;
+        }
+        form input, form select, form textarea {
+            width: 100%;
+            padding: 10px;
+            margin: 8px 0 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+        }
+        form button {
+            background-color: #4A90E2;
+            color: #fff;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        form button:hover {
+            background-color: #357ABD;
+        }
+        table {
+            width: 100%;
+            margin-top: 20px;
+            border-collapse: collapse;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        th, td {
+            padding: 12px;
+            font-size: 14px;
+        }
+        th {
+            background-color: #f1f1f1;
+        }
+        tbody tr:hover {
+            background-color: #f5f5f5;
+        }
+        .actions a {
+            color: #4A90E2;
+            text-decoration: none;
+            font-weight: 500;
+            padding: 6px 12px;
+            border: 1px solid #4A90E2;
+            border-radius: 4px;
+            transition: background-color 0.3s;
+        }
+        .actions a:hover {
+            background-color: #4A90E2;
+            color: #fff;
+        }
+        .flash-messages {
+            margin-bottom: 20px;
+        }
+        .flash-messages ul {
+            list-style: none;
+            padding: 0;
+        }
+        .flash-messages li {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #f5c6cb;
+        }
+        .flash-messages .success {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        .export-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>CVE Database</h1>
+
+    <!-- Display flash messages -->
+    <div class="flash-messages">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul>
+                    {% for category, message in messages %}
+                        <li class="{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <div class="container">
+        <!-- Form to add new CVE -->
+        <form action="/add" method="POST">
+            <label for="cve_id">CVE ID:</label>
+            <input type="text" id="cve_id" name="cve_id" required><br>
+            
+            <label for="rule_name">Rule Name:</label>
+            <input type="text" id="rule_name" name="rule_name" required><br>
+            
+            <label for="cve_description">CVE Description:</label>
+            <textarea id="cve_description" name="cve_description" required></textarea><br>
+            
+            <label for="severity">Severity:</label>
+            <select id="severity" name="severity" required>
+                <option value="Critical">Critical</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+            </select><br>
+            
+            <label for="correlation_logic">Correlation Logic:</label>
+            <input type="text" id="correlation_logic" name="correlation_logic" required><br>
+            
+            <label for="created_by">Created By:</label>
+            <input type="text" id="created_by" name="created_by" required><br>
+            
+            <button type="submit">Add CVE</button>
+        </form>
+
+        <hr>
+
+        <!-- Export options -->
+        <div class="export-buttons">
+            <form action="/export" method="GET">
+                <button type="submit">Export to CSV</button>
+            </form>
+            <form action="/export_sql" method="GET">
+                <button type="submit">Export to SQL</button>
+            </form>
+        </div>
+
+        <hr>
+
+        <h2>Existing CVEs</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>CVE ID</th>
+                    <th>Rule Name</th>
+                    <th>CVE Description</th>
+                    <th>Severity</th>
+                    <th>Correlation Logic</th>
+                    <th>Created By</th>
+                    <th>Created At</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cve in cves %}
+                    <tr>
+                        <td>{{ cve.cve_id }}</td>
+                        <td>{{ cve.rule_name }}</td>
+                        <td>{{ cve.cve_description }}</td>
+                        <td>{{ cve.severity }}</td>
+                        <td>{{ cve.correlation_logic }}</td>
+                        <td>{{ cve.created_by }}</td>
+                        <td>{{ cve.created_at }}</td>
+                        <td class="actions"><a href="/edit/{{ cve.cve_id }}">Edit</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>
